@@ -1,23 +1,23 @@
-from os import error
-import sys
-import matplotlib
+# from os import error
+# import sys
 import pandas as pd
-from pandas.core import series
-import statsmodels
+# from pandas.core import series
+# import statsmodels
 import numpy as np
 from scipy import stats
-from numpy.lib.type_check import real
+# from numpy.lib.type_check import real
 # import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
-# import xlrd
-from scipy import stats
+# from scipy import stats
 import warnings
 
-# warnings.filterwarnings("ignore")
-# matplotlib.rcParams['font.sans-serif'] = ['KaiTi']
+warnings.filterwarnings("ignore")
+matplotlib.rcParams['font.sans-serif'] = ['KaiTi']  # 用来显示中文
+matplotlib.rcParams['axes.unicode_minus'] = False  # 用来显示负号
 
 
+# 加载读取数据
 def get_data():
     # df = pd.read_csv(r'..\\datas\\211009.xls', encoding='unicode_escape')
     # df = pd.read_csv(r'..\\datas\\211009.xls')
@@ -47,17 +47,14 @@ def get_data():
 
     # 80%data difference前百分之八十数据的差分
     data_diff = data_d.diff(1).dropna()
-    return data_diff
     # print(data_diff)
 
-
-
-# 向下移动50，以此进行超前50步的预测，值从51开始，前面都是nan,但他是51-23386，向下移动的最后50个数没了？
+    return data_d, data_diff
 
 
 # boxcox transform俩图画在一张上observe#boxcox变换
 def boxcox_transformation():
-    data_diff = get_data()
+    _, data_diff = get_data()
 
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
@@ -80,26 +77,25 @@ def boxcox_transformation():
     # print(bc_diff)
     # print(data_d)
 
-"""
 
-#观察 数据的稳定性
+# 观察 数据的稳定性
 def stationary_observation():
+    data_d, data_diff = get_data()
     plt.plot(data_d, color='r', label="原数据")
     plt.plot(data_diff, color=(0, 0, 1), label="差分处理后数据")
-    plt.xlabel("个数")  #x轴命名表示
-    plt.ylabel("mg/m3")  #y轴命名表示
+    plt.xlabel("个数")  # x轴命名表示
+    plt.ylabel("mg/m3")  # y轴命名表示
     plt.title("数据平稳性处理前后对比图")
-    plt.legend()  #增加图例
+    plt.legend()  # 增加图例
     plt.show()
-    #data_d.plot()
-    #data_diff.plot()
-    #bc_diff.plot()
-    #plt.show()
+
+    # data_d.plot()
+    # data_diff.plot()
+    # bc_diff.plot()
+    # plt.show()
 
 
-stationary_observation()
-
-
+"""
 def stationary_detect():
     from statsmodels.tsa.stattools import adfuller
     adfuller(data_diff)  #差分序列的ADF平稳性检验结果，重要，检测出拒绝原不平稳的假设
@@ -342,3 +338,4 @@ mes34 = metrics.mean_squared_error(real, predict)
 if __name__ == '__main__':
     # get_data()
     boxcox_transformation()
+    stationary_observation()
