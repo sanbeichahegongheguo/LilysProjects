@@ -9,7 +9,6 @@ from scipy import stats
 # import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
-# from scipy import stats
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -19,8 +18,6 @@ matplotlib.rcParams['axes.unicode_minus'] = False  # 用来显示负号
 
 # 加载读取数据
 def get_data():
-    # df = pd.read_csv(r'..\\datas\\211009.xls', encoding='unicode_escape')
-    # df = pd.read_csv(r'..\\datas\\211009.xls')
     df = pd.read_excel(r'..\\datas\\211009.xlsx')
 
     # 最原始的data
@@ -29,10 +26,13 @@ def get_data():
     # 数据数量，243000+
     n = np.size(data)
 
-    # data_d取data数据的前80%，后面的ARIMA模型用的就是80%的data数据来训练
-    # 后20%数据来预测
-    # print("全部数据量： %d" % n)
-    # print("准备提取80%%的训练数据量： %d" % (int(n * 0.8)))
+    # 接下来顶一个变量data_d，取data数据的前80%，后面的ARIMA模型用的就是80%的data数据来训练。
+    # 后20%数据来检验预测效果。
+
+    print("全部数据量： %d" % n)
+    # 全部数据量： 43201
+    print("准备提取80%%的训练数据量： %d" % (int(n * 0.8)))
+    # 准备提取80%的训练数据量： 34560
 
     # 取训练数据
     data_d = data[:int(n * 0.8)]
@@ -40,7 +40,7 @@ def get_data():
     # 取测试数据
     data_test = data[int(n * 0.8):n]
 
-    # 向下移动50，以此进行超前50步的预测，值从51开始
+    # 把训练数据按列向下移动50步，以此进行超前50步的预测，值从51开始。
     data_down50 = data_d.shift(50)
     # print(data_d)
     # print(data_test)
@@ -49,28 +49,27 @@ def get_data():
     data_diff = data_d.diff(1).dropna()
     # print(data_diff)
 
-    return data_d, data_diff
+    return data_d, data_diff, data_test, data_down50
 
 
-# boxcox transform俩图画在一张上observe#boxcox变换
-def boxcox_transformation():
-    _, data_diff = get_data()
-
+# boxcox 变换前后的俩图画在一张上进行观测， 并进行boxcox变换
+def boxcox_transformation(data_diff):
     fig = plt.figure()
-    ax1 = fig.add_subplot(211)
+    ax1 = fig.add_subplot(221)
     # x = stats.loggamma.rvs(5, size=500) + 5
-    prob = stats.probplot(data_diff, dist=stats.norm, plot=ax1)
+    stats.probplot(data_diff, dist=stats.norm, plot=ax1)
 
     ax1.set_xlabel('')
-    ax1.set_title('Probplot against normal distribution')
-    plt.show()
+    ax1.set_title('Probplot against \nnormal distribution')
+    # plt.show()
 
-    ax2 = fig.add_subplot(212)
+    ax2 = fig.add_subplot(224)
     data_diff_positive = data_diff + 100
-    bc_diff, lamda = stats.boxcox(data_diff_positive)  # diff_data的boxcox变换
-    prob = stats.probplot(bc_diff, dist=stats.norm, plot=ax2)
-    ax2.set_title('Probplot after Box-Cox transformation')
-    print('lamda', lamda)  # boxcox的lamda值
+    # diff_data的boxcox变换
+    bc_diff, lamda = stats.boxcox(data_diff_positive)
+    stats.probplot(bc_diff, dist=stats.norm, plot=ax2)
+    ax2.set_title('Probplot after \nBox-Cox transformation')
+    print('boxcox的lamda值', lamda)
     plt.show()
 
     # np.reshape(bc_diff)
@@ -79,8 +78,7 @@ def boxcox_transformation():
 
 
 # 观察 数据的稳定性
-def stationary_observation():
-    data_d, data_diff = get_data()
+def stationary_observation(data_d, data_diff):
     plt.plot(data_d, color='r', label="原数据")
     plt.plot(data_diff, color=(0, 0, 1), label="差分处理后数据")
     plt.xlabel("个数")  # x轴命名表示
@@ -95,31 +93,29 @@ def stationary_observation():
     # plt.show()
 
 
-"""
-def stationary_detect():
+def stationary_detect(data_diff):
     from statsmodels.tsa.stattools import adfuller
-    adfuller(data_diff)  #差分序列的ADF平稳性检验结果，重要，检测出拒绝原不平稳的假设
-    ，差分后数据是平稳的
+    # 差分序列的ADF平稳性检验结果. 重要，检测出拒绝原不平稳的假设，差分后数据是平稳的
+    adfuller(data_diff)
 
     from statsmodels.stats.diagnostic import acorr_ljungbox
     print(u'差分序列的白噪声检验结果为：', acorr_ljungbox(data_diff, lags=1))
 
-    from statsmodels.tsa.stattools import adfuller
     dwgtest = adfuller(data_diff)
     print(u'差分序列的单位根检验结果为：', dwgtest)
 
-    from statsmodels.stats.diagnostic import acorr_ljungbox
     xgxtest = acorr_ljungbox(data_diff, lags=20)
-    print(u'差分序列的相关性检验结果为：',
-          xgxtest)  #第一个数统计值，第二个数p值，结果p较小，拒绝原假设（没有相关性），所以序列有相关性
+    # 第一个数统计值，第二个数p值，结果p较小，拒绝原假设（没有相关性），所以序列有相关性
+    print(u'差分序列的相关性检验结果为：', xgxtest)
 
 
-stationary_detect()
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
+
+"""
 
 #画ACF、PACF图
 def plot_acf_pacf(series, lags):
+    from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
     pacf = plot_pacf(series, lags=lags)
     plt.title('PACF')  #画ACF和PACF图，判断AR(p)和MA(q)的阶数p、几节后截尾，值为几
     plt.show()
@@ -132,12 +128,13 @@ series = data_diff
 lags = 20
 #plot_acf_pacf(series, lags)
 
-#使用AIC、BIC最小准则确定p\\q,当pq阶数较小时，
-# 可用这种遍历的暴力解法，返回一个元组，分别为pq值
-import statsmodels.tsa.stattools as st
+
 
 
 def pq_decide():
+    #使用AIC、BIC最小准则确定p\\q,当pq阶数较小时，
+    # 可用这种遍历的暴力解法，返回一个元组，分别为pq值
+    import statsmodels.tsa.stattools as st
     #AIC评估统计模型复杂度和衡量统计模型“拟合”优良性的
     model = st.arma_order_select_ic(data_diff,
                                     max_ar=6,
@@ -195,7 +192,7 @@ def plot_resid_detect():
 
 
 plot_resid_detect
-#PEP8规范写代码
+# PEP8规范写代码
 # walk forward over time steps in test
 
 #values = dataset.values
@@ -336,6 +333,7 @@ mes34 = metrics.mean_squared_error(real, predict)
 """
 
 if __name__ == '__main__':
-    # get_data()
-    boxcox_transformation()
-    stationary_observation()
+    data_d, data_diff, data_test, data_down50 = get_data()
+    boxcox_transformation(data_diff)
+    stationary_observation(data_d, data_diff)
+    stationary_detect(data_diff)
