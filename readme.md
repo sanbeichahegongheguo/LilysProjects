@@ -20,19 +20,22 @@ Box-Cox变换是Box和Cox在1964年提出的一种广义幂变换方法，是统
 
 #### sns.displot参数如下
 ```python
-sns.distplot(a, bins=None, hist=True, kde=True, rug=False, fit=None, hist_kws=None, kde_kws=None, rug_kws=None, fit_kws=None, color=None, vertical=False, norm_hist=False, axlabel=None, label=None, ax=None)
+sns.distplot(a, bins=None, hist=True, kde=True, rug=False, fit=None, 
+            hist_kws=None, kde_kws=None, rug_kws=None, fit_kws=None, 
+             color=None, vertical=False, norm_hist=False, axlabel=None, 
+             label=None, ax=None)
 ```
 
-bins: ?
-hist: 控制是否显示条形图, 默认为True.
-kde: 控制是否显示核密度估计图, 默认为True.
-rug: 控制是否显示观测的小细条（边际毛毯）默认为false.
-fit: 设定函数图像, 与原图进行比较.
-norm_hist：若为True, 则直方图高度显示密度而非计数(含有kde图像中默认为True).
+- bins: ?
+- hist: 控制是否显示条形图, 默认为True.
+- kde: 控制是否显示核密度估计图, 默认为True.
+- rug: 控制是否显示观测的小细条（边际毛毯）默认为false.
+- fit: 设定函数图像, 与原图进行比较.
+- norm_hist：若为True, 则直方图高度显示密度而非计数(含有kde图像中默认为True).
 通过hidt和kde参数调节是否显示直方图和核密度估计(hist, kde 默认均为True).
-axlabel: 设置x轴的label.
-label : 没有发现什么作用.
-ax: 图片位置.
+- axlabel: 设置x轴的label.
+- label : 没有发现什么作用.
+- ax: 图片位置.
 
 ```python
 import matplotlib.pyplot as plt
