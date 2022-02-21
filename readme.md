@@ -19,7 +19,7 @@ Box-Cox变换是Box和Cox在1964年提出的一种广义幂变换方法，是统
 
 
 #### sns.displot参数如下
-```python`
+```python
 sns.distplot(a, bins=None, hist=True, kde=True, rug=False, fit=None, hist_kws=None, kde_kws=None, rug_kws=None, fit_kws=None, color=None, vertical=False, norm_hist=False, axlabel=None, label=None, ax=None)
 ```
 
